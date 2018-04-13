@@ -1,0 +1,133 @@
+---
+title: "Market Basket Analysis"
+author: "Prshant and Shrinath"
+date: "March 1, 2018"
+output: html_document
+---
+
+Description: Recommender system using the concept of Market basket analysis. We have used Apriori Algorithm to predict top 20 most sold items and relevant items related to highest confidence. Expected growth in purchased rate is 14%. 
+
+```{r}
+#install.packages("RColorBrewer")
+#install.packages("arulesViz")
+library(arulesViz)
+library(RColorBrewer)
+library(arules)
+dataset = read.csv('Market_Basket_Optimisation.csv', header = FALSE)
+head(dataset)
+View(dataset)
+```
+
+Description: This dataset contains 20 variables with 7500 observations.7500 customers purchase history on weekly basis.But we are not going to use this dataset because Avril's package doesn't take dataset like this as input.It takes input as the sparse matrix.
+
+```{r}
+dataset = read.transactions('Market_Basket_Optimisation.csv', sep = ',', rm.duplicates = TRUE)
+#There are 5 transactions containing 1 duplicates
+str(dataset)
+```
+
+
+Description: It's actually a matrix that contains a lot of zeroes in machinery and we will encounter a lot of times the word sparcity that corresponds to a large number of zeroes.So this matrix contains very few number of non-zero values.In this 120 different products are present and make 120 columns.Lines will be same as different transactions.So 0 and 1 in the new matrix.0 represent customer has not bought the product and 1 represent customer has bought the product.We need to use sep function because of read.transaction doesn't understand comma separator rm.duplicates is to avoid duplicates.
+```{r}
+summary(dataset)
+```
+
+we can observe that 7501 rows and 119 columns and a density of 0.03.Density is proportion of non-zero values is 0.03.3% non-zero and 97%  zero.Most frequent item is mineral water.Eggs take 2nd place and so on.Length distribution defines itemsets per transaction.1754 basket contains a single item.1358 basket contains two products.Mean is 3.9 and max are 20. 
+
+```{r}
+itemFrequencyPlot(dataset, topN = 50)
+```
+Here is a list of top 50 most frequent purchased products
+
+```{r}
+itemFrequencyPlot(dataset,topN=20,col=brewer.pal(8,'Pastel2'),main='Relative Item Frequency Plot',type="relative",ylab="Item Frequency (Relative)")
+```
+
+Here is a list of top 20 most frequent purchased products
+
+```{r}
+# Training Apriori on the dataset
+# COnsidering item to be bought 3 times a day that defines support as 0.003 and considering confidence 0.8 by default value
+rules = apriori(data = dataset, parameter = list(support = 0.003, confidence = 0.8))
+```
+
+We can observe that with 0.8 confidence no rules can be generated.
+
+```{r}
+# COnsidering item to be bought 3 times a day that defines support as 0.003 and considering confidence 0.4 by default value
+#Support 3*7/7500 ~ 0.003
+rules = apriori(data = dataset, parameter = list(support = 0.003, confidence = 0.4))
+#Inspecitng top 20 rules with support 0.03 and confidence of 40%
+
+inspect(sort(rules, by = 'lift')[1:20])
+
+```
+
+We can observe 281 rules with 40% confidence.
+
+
+```{r}
+plot(rules[1:20],method = "graph",control = list(type = "items"))
+```
+
+The size of graph nodes is based on support levels and the colour on lift ratios. The incoming lines show the Antecedants or the LHS and the RHS is represented by names of items. 
+
+
+
+```{r}
+# COnsidering item to be bought 3 times a day that defines support as 0.003 and considering confidence 0.2 by default value
+#Support 3*7/7500 ~ 0.003
+rules = apriori(data = dataset, parameter = list(support = 0.003, confidence = 0.2))
+#Inspecitng top 20 rules with support 0.03 and confidence of 20%
+
+inspect(sort(rules, by = 'lift')[1:20])
+plot(rules[1:20],method = "graph",control = list(type = "items"))
+```
+
+We can observe 1348 rules with 20% confidence.With this confidence we are getting better rules.
+
+
+```{r}
+# COnsidering item to be bought 4 times a day that defines support as 0.004 and considering confidence 0.2 by default value
+#Support 4*7/7500 ~ 0.004
+rules = apriori(data = dataset, parameter = list(support = 0.004, confidence = 0.2))
+#Inspecitng top 20 rules with support 0.04 and confidence of 20%
+
+inspect(sort(rules, by = 'lift')[1:20])
+plot(rules[1:20],method = "graph",control = list(type = "items"))
+#The plot uses the arulesViz package and plotly to generate an interactive plot. We can hover over each rule and see the Support, Confidence and Lift.
+
+#As the interactive plot suggests, one rule that has a confidence of 0.61 is the one above. It has an exceptionally high lift as well, at 3.51.
+plotly_arules(rules)
+```
+
+
+
+We can observe 811 rules with 20% confidence.With this confidence we are getting better and appropriate rules
+By visualising these rules and plots, we can come up with a more detailed explanation of how to make business decisions in retail environments.
+we can make some specific aisles now in my store to help customers pick products easily from one place and also boost the store sales simultaneously.
+
+
+Person who purchased light cream has also purchased chicken 30% times.
+Person who purchased pasta has also purchased escalope and shrimp 37 and 32% times.
+Person who purchased herb & pepper has also purchased spaghetti 57% times.
+Person who purchased cooking oil,ground beef has also purchased ground beef 39% times.
+
+
+This analysis would help us improve our store sales and make calculated business decisions for people both in a hurry and the ones leisurely shopping.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
