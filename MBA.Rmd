@@ -1,6 +1,6 @@
 ---
 title: "Market Basket Analysis"
-author: "Prshant and Shrinath"
+author: "Shrinath"
 date: "March 1, 2018"
 output: html_document
 ---
